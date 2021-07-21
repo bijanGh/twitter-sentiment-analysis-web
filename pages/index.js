@@ -1,9 +1,9 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import Avatar from '../src/components/Avatar'
+import Head from "next/head";
+import Image from "next/image";
+import Avatar from "../src/components/Button";
 export default function Home() {
   return (
-    <div >
+    <div>
       <Head>
         <title>Twitter Sentiment Analysis</title>
         <meta name="description" content="home" />
@@ -11,8 +11,8 @@ export default function Home() {
       </Head>
 
       <div className="container flex items-center justify-center h-screen mx-auto align-middle ">
-        <Avatar/>
+        <Avatar />
       </div>
     </div>
-  )
+  );
 }
