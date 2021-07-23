@@ -11,7 +11,7 @@ export default function Home() {
       </Head>
 
       <div className="container flex items-center justify-center h-screen mx-auto align-middle ">
-        <Avatar />
+        <Avatar text="Asghar" />
       </div>
     </div>
   );
