@@ -1,11 +1,11 @@
 import { Pie } from "react-chartjs-2";
 import propTypes from "prop-types";
 
-const Chart = ({ data }) => {
+const Component = ({ data }) => {
   return data ? <Pie data={data}></Pie> : <></>;
 };
 
-Chart.PropTypes = {
+Component.PropTypes = {
   data: {
     lables: propTypes.arrayOf(propTypes.string),
     datasets: propTypes.arrayOf({
@@ -17,4 +17,4 @@ Chart.PropTypes = {
   },
 };
 
-export default Chart;
+export default Component;
