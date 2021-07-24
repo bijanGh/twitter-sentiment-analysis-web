@@ -1,7 +1,8 @@
 import Head from "next/head";
 import Image from "next/image";
 import TwitterPic from "../public/twitter-240.png";
-
+import Link from "next/link";
+import { useState } from "react";
 const data = {
   labels: ["Red", "Blue", "Yellow"],
   datasets: [
@@ -19,8 +20,9 @@ const data = {
 };
 
 const btnStyles =
-  "px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600 w-28";
+  "px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-600 w-28 text-center";
 export default function Home() {
+  const [userName, setuserName] = useState("");
   return (
     <div>
       <Head>
@@ -39,10 +41,26 @@ export default function Home() {
         <input
           className="px-4 py-1 mt-16 text-center border-2 border-blue-500 border-solid rounded w-72 "
           placeholder="Enter your Twitter username"
+          value={userName}
+          onChange={(e) => setuserName(e.target.value)}
         />
         <div className="flex flex-row justify-around mt-24 w-72">
-          <button className={`${btnStyles} `}>Mentions</button>
-          <button className={`${btnStyles} `}>Tweets</button>
+          <Link
+            href={{
+              pathname: "/Tweet",
+              query: { userName, target: "mentions" },
+            }}
+          >
+            <a className={`${btnStyles} `}>Mentions</a>
+          </Link>
+          <Link
+            href={{
+              pathname: "/Tweet",
+              query: { userName, target: "tweets" },
+            }}
+          >
+            <a className={`${btnStyles} `}>Tweets</a>
+          </Link>
         </div>
       </div>
     </div>
