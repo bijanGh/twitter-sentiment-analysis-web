@@ -43,7 +43,7 @@ function Page({}) {
         });
   });
   return TweeterData ? (
-    <div className="bg-indigo-100">
+    <div className="min-h-screen bg-indigo-100">
       <div className="flex flex-wrap items-center justify-center w-full align-middle flex-column">
         <div className="flex flex-row justify-between w-11/12 pt-3 ">
           <span className="p-2">
@@ -54,7 +54,7 @@ function Page({}) {
           </span>
           <div>
             {" "}
-            <p className="px-1 mt-1 text-lg text-center text-white capitalize bg-blue-600 rounded-lg  text-">
+            <p className="px-1 mt-1 text-lg text-center text-white capitalize bg-blue-600 rounded-lg text-">
               {target}
             </p>
           </div>
