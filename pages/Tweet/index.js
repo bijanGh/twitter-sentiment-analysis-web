@@ -193,11 +193,19 @@ function Page({}) {
               </span>
             </div>
             <div className="flex flex-wrap w-11/12 flex-column ">
-              {TweeterData.map(({ text, id }) => (
-                <span className="w-full py-1" key={id}>
-                  <Tweet text={text} />
-                </span>
-              ))}
+              {TweeterData.map(({ text, id, score }) => {
+                const bgColor = {
+                  NEGATIVE: "bg-red-200",
+                  POSITIVE: "bg-green-200",
+                  NEUTRAL: "",
+                };
+
+                return (
+                  <span className="w-full py-1" key={id}>
+                    <Tweet text={text} className={bgColor[score]} />
+                  </span>
+                );
+              })}
             </div>
           </div>
         </div>
