@@ -34,7 +34,7 @@ const Component = ({ imageSrc, userName }) => {
   );
 };
 
-Component.PropTypes = {
+Component.propTypes = {
   imageSrc: propTypes.string,
   userName: propTypes.string,
 };

@@ -5,7 +5,7 @@ const Component = ({ data }) => {
   return data ? <Pie data={data}></Pie> : <></>;
 };
 
-Component.PropTypes = {
+Component.propTypes = {
   data: {
     lables: propTypes.arrayOf(propTypes.string),
     datasets: propTypes.arrayOf({

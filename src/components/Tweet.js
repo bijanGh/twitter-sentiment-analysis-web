@@ -1,5 +1,4 @@
 import propTypes from "prop-types";
-import Avatar from "./Avatar";
 import Image from "next/image";
 import TwitterPic from "../../public/twitter-240.png";
 const Component = ({ avatarImage, text }) => {
@@ -21,7 +20,7 @@ const Component = ({ avatarImage, text }) => {
   );
 };
 
-Component.PropTypes = {
+Component.propTypes = {
   avatarImage: propTypes.string,
   text: propTypes.string,
 };

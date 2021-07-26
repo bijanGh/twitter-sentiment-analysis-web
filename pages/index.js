@@ -42,7 +42,11 @@ export default function Home() {
           className="px-4 py-1 mt-16 text-center border-2 border-blue-500 border-solid rounded w-72 "
           placeholder="Enter your Twitter username"
           value={userName}
-          onChange={(e) => setuserName(e.target.value)}
+          onChange={(e) =>
+            setuserName(
+              e.target.value.trim().toLowerCase().replace(/(\@)/g, "")
+            )
+          }
         />
         <div className="flex flex-row justify-around mt-24 w-72">
           <Link
