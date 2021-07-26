@@ -9,7 +9,7 @@ const Component = ({ imageSrc, userName }) => {
       <div className="flex flex-col items-center ">
         <div className="w-24 h-24 overflow-hidden bg-blue-600 border-4 border-blue-500 border-solid rounded-full">
           {imageSrc ? (
-            <Image
+            <img
               width="100%"
               height="100%"
               src={imageSrc}
