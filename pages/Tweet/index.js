@@ -4,7 +4,8 @@ import Avatar from "../../src/components/Avatar";
 import Pie from "../../src/components/PieChart";
 import Tweet from "../../src/components/Tweet";
 import { sentimentAnalysis, loadModel, getMetaData } from "../../src/helpers";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://bijan-twitter-api.herokuapp.com";
 
 const data = {
   datasets: [
@@ -197,11 +198,11 @@ function Page({}) {
                 const bgColor = {
                   NEGATIVE: "bg-red-200",
                   POSITIVE: "bg-green-200",
-                  NEUTRAL: "",
+                  NEUTRAL: "bg-white",
                 };
 
                 return (
-                  <span className="w-full py-1" key={id}>
+                  <span className="w-full py-1 " key={id}>
                     <Tweet text={text} className={bgColor[score]} />
                   </span>
                 );
