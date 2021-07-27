@@ -38,8 +38,9 @@ export default function Home() {
           alt="tweeter logo image"
           src={TwitterPic}
         />
+        <p className="p-2">Twitter Sentiment Analysis</p>
         <input
-          className="px-4 py-1 mt-16 text-center border-2 border-blue-500 border-solid rounded w-72 "
+          className="px-4 py-1 mt-4 text-center border-2 border-blue-500 border-solid rounded w-72 "
           placeholder="Enter your Twitter username"
           value={userName}
           onChange={(e) =>
