@@ -61,13 +61,13 @@ function Page({}) {
       method: "post",
       body: JSON.stringify({ user: userName }),
     });
-    setStatus("FETCHED_TWEETS");
 
     const tweetsParsed = await response.json();
     if (!tweetsParsed.tweets || tweetsParsed.tweets.length === 0) {
       return null;
     }
     setTweetCount(tweetsParsed.tweets.length);
+    setStatus("FETCHED_TWEETS");
 
     let [positiveCount, negativeCount, neutralCount] = [0, 0, 0];
     const tweetsAnalysed = tweetsParsed.tweets.map((item) => {
