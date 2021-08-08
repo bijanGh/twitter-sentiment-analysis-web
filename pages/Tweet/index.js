@@ -50,7 +50,13 @@ function Page({}) {
   const metaData = useRef(null);
 
   const pageSetup = async (target, userName) => {
-    setStatus("SETUP");
+    setStatus("FETCHING_AI");
+
+    if (!model.current) model.current = await loadModel();
+    if (!metaData.current) metaData.current = await getMetaData();
+
+    setStatus("FETCHING_TWEETS");
+
     const response = await fetch(`${API_URL}/${target}`, {
       method: "post",
       body: JSON.stringify({ user: userName }),
@@ -62,8 +68,7 @@ function Page({}) {
       return null;
     }
     setTweetCount(tweetsParsed.tweets.length);
-    if (!model.current) model.current = await loadModel();
-    if (!metaData.current) metaData.current = await getMetaData();
+
     let [positiveCount, negativeCount, neutralCount] = [0, 0, 0];
     const tweetsAnalysed = tweetsParsed.tweets.map((item) => {
       const score = sentimentAnalysis(
@@ -139,13 +144,13 @@ function Page({}) {
   }, []);
 
   switch (status) {
-    case "SETUP":
+    case "FETCHING_AI":
       return (
-        <DefaultElement>
-          Fetching {target} of {userName}
-        </DefaultElement>
+        <DefaultElement>Fetching AI models please be patient</DefaultElement>
       );
     case "INITIAL":
+      return <DefaultElement>Initializing</DefaultElement>;
+    case "FETCHING_TWEETS":
       return (
         <DefaultElement>
           Fetching {target} of {userName}
