@@ -108,17 +108,15 @@ function Page({}) {
 
   useEffect(() => {
     const pageSetup = async (target, userName) => {
-      setStatus("FETCHING_AI");
-
       if (!model.current) model.current = await loadModel();
       if (!metaData.current) metaData.current = await getMetaData();
-
       setStatus("FETCHING_TWEETS");
 
       const response = await fetch(`${API_URL}/${target}`, {
         method: "post",
         body: JSON.stringify({ user: userName }),
       });
+      setStatus("FETCHED_TWEETS");
 
       const tweetsParsed = await response.json();
 
@@ -127,8 +125,6 @@ function Page({}) {
       }
 
       setTweetCount(tweetsParsed.tweets.length);
-
-      setStatus("FETCHED_TWEETS");
 
       return {
         user: tweetsParsed.user,
@@ -162,6 +158,10 @@ function Page({}) {
                 model.current,
                 metaData.current
               );
+              setPositiveCount(0);
+              setNegativeCount(0);
+              setNeutralCount(0);
+
               switch (score) {
                 case "POSITIVE":
                   setPositiveCount((count) => count + 1);
@@ -191,12 +191,10 @@ function Page({}) {
   }, []);
 
   switch (status) {
-    case "FETCHING_AI":
+    case "INITIAL":
       return (
         <DefaultElement>Fetching AI models please be patient</DefaultElement>
       );
-    case "INITIAL":
-      return <DefaultElement>Initializing</DefaultElement>;
     case "FETCHING_TWEETS":
       return (
         <DefaultElement>
