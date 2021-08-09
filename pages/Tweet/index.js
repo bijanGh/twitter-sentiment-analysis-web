@@ -108,28 +108,51 @@ function Page({}) {
 
   useEffect(() => {
     const pageSetup = async (target, userName) => {
-      if (!model.current) model.current = await loadModel();
-      if (!metaData.current) metaData.current = await getMetaData();
-      setStatus("FETCHING_TWEETS");
+      try {
+        if (!model.current) model.current = await loadModel();
+        if (!metaData.current) metaData.current = await getMetaData();
+        setStatus("FETCHING_TWEETS");
 
-      const response = await fetch(`${API_URL}/${target}`, {
-        method: "post",
-        body: JSON.stringify({ user: userName }),
-      });
-      setStatus("FETCHED_TWEETS");
+        const response = await window.fetch(`${API_URL}/${target}`, {
+          method: "post",
+          body: JSON.stringify({ user: userName }),
+        });
+        setStatus("FETCHED_TWEETS");
+        const tweetsParsed = await response.json();
+        const count = tweetsParsed.tweets.length;
+        setTweetCount(count);
 
-      const tweetsParsed = await response.json();
+        if (!tweetsParsed.tweets || tweetsParsed.tweets.length === 0) {
+          setStatus("NO_TWEETS");
+          return;
+        }
+        let [positive, negative, neutral] = [0, 0, 0];
+        const tweetsAnalysed = tweetsParsed.tweets.map((item) => {
+          const score = sentimentAnalysis(
+            item.text,
+            model.current,
+            metaData.current
+          );
 
-      if (!tweetsParsed.tweets || tweetsParsed.tweets.length === 0) {
-        return null;
-      }
-
-      setTweetCount(tweetsParsed.tweets.length);
-
-      return {
-        user: tweetsParsed.user,
-        tweets: tweetsParsed.tweets,
-        chart: {
+          switch (score) {
+            case "POSITIVE":
+              positive++;
+              break;
+            case "NEGATIVE":
+              negative++;
+              break;
+            default:
+              neutral++;
+              break;
+          }
+          return {
+            ...item,
+            score,
+          };
+        });
+        setUserData(tweetsParsed.user);
+        setTweeterData(tweetsAnalysed);
+        setChartData({
           datasets: [
             {
               label: "sentiment analysis result",
@@ -142,52 +165,21 @@ function Page({}) {
               hoverOffset: 4,
             },
           ],
-        },
-      };
+        });
+        setPositiveCount(positive);
+        setNegativeCount(negative);
+        setNeutralCount(neutral);
+        setStatus("READY");
+      } catch (error) {
+        console.log(
+          "🚀 ~ file: index.js ~ line 174 ~ pageSetup ~ error",
+          error
+        );
+        setStatus("ERROR");
+      }
     };
 
-    if (status === "INITIAL" && userName && target)
-      pageSetup(target, userName)
-        .then((res) => {
-          if (res) {
-            const { chart, tweets, user } = res;
-
-            const tweetsAnalysed = tweets.map((item) => {
-              const score = sentimentAnalysis(
-                item.text,
-                model.current,
-                metaData.current
-              );
-              setPositiveCount(0);
-              setNegativeCount(0);
-              setNeutralCount(0);
-
-              switch (score) {
-                case "POSITIVE":
-                  setPositiveCount((count) => count + 1);
-                  break;
-                case "NEGATIVE":
-                  setNegativeCount((count) => count + 1);
-                  break;
-                default:
-                  setNeutralCount((count) => count + 1);
-                  break;
-              }
-              return {
-                ...item,
-                score,
-              };
-            });
-            setUserData(user);
-            setTweeterData(tweetsAnalysed);
-            setChartData(chart);
-            setStatus("READY");
-          } else setStatus("NO_TWEETS");
-        })
-        .catch((e) => {
-          console.error("🚀 ~ file: index.js ~ line 44 ~ useEffect ~ e", e);
-          setStatus("ERROR");
-        });
+    pageSetup(target, userName);
   }, []);
 
   switch (status) {
@@ -210,8 +202,7 @@ function Page({}) {
     case "FETCHED_TWEETS":
       return (
         <DefaultElement>
-          Processing {positiveCount + negativeCount + negativeCount}{" "}
-          {tweetCount} {target} please be patient ... .
+          Processing {target} it may take a minute please be patient ... .
         </DefaultElement>
       );
 
