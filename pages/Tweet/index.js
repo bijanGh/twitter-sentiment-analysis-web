@@ -4,8 +4,7 @@ import Avatar from "../../src/components/Avatar";
 import Pie from "../../src/components/PieChart";
 import Tweet from "../../src/components/Tweet";
 import { sentimentAnalysis, loadModel, getMetaData } from "../../src/helpers";
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://bijan-twitter-api.herokuapp.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 const data = {
   datasets: [
@@ -20,11 +19,6 @@ const data = {
       hoverOffset: 4,
     },
   ],
-};
-const scores = {
-  POSITIVE: {
-    styles: "bh",
-  },
 };
 
 const DefaultElement = ({ children }) => (
@@ -43,7 +37,6 @@ const Tweets = ({
   positiveCount,
   negativeCount,
   neutralCount,
-  chartData,
   tweets,
 }) => {
   return (
@@ -53,23 +46,38 @@ const Tweets = ({
           <span className="p-2">
             <Avatar imageSrc={userImage} userName={username} />
           </span>
-          <div>
-            <p className="px-1 mt-1 text-lg text-center text-white capitalize bg-blue-600 rounded-lg text-">
+          <div className="text-sm text-center sm:text-lg">
+            <p className="px-1 mt-1 text-white capitalize bg-blue-600 rounded-lg">
               {tweetsType} : {tweetCount}
             </p>
-            <p className="px-1 mt-1 text-lg text-green-400 capitalize rounded-lg ">
-              Positive count : {positiveCount}
+            <p className="px-1 mt-1 text-green-400 capitalize rounded-lg ">
+              Positives: {positiveCount}
             </p>
-            <p className="px-1 mt-1 text-lg text-red-400 capitalize rounded-lg ">
-              Negative count : {negativeCount}
+            <p className="px-1 mt-1 text-red-400 capitalize rounded-lg ">
+              Negatives: {negativeCount}
             </p>
-            <p className="px-1 mt-1 text-lg text-gray-600 capitalize rounded-lg ">
-              Neutral count : {neutralCount}
+            <p className="px-1 mt-1 text-gray-600 capitalize rounded-lg ">
+              Neutrals: {neutralCount}
             </p>
           </div>
 
           <span className="w-32 h-32">
-            <Pie data={chartData} />
+            <Pie
+              data={{
+                datasets: [
+                  {
+                    label: "sentiment analysis result",
+                    data: [positiveCount, negativeCount, neutralCount],
+                    backgroundColor: [
+                      "rgb(68, 242, 103)",
+                      "rgb(240, 104, 77)",
+                      "rgb(222, 222, 222)",
+                    ],
+                    hoverOffset: 4,
+                  },
+                ],
+              }}
+            />
           </span>
         </div>
         <div className="flex flex-wrap w-11/12 flex-column ">
@@ -97,95 +105,101 @@ function Page({}) {
   const { target, userName } = router.query;
   const model = useRef(null);
   const metaData = useRef(null);
-  const [TweeterData, setTweeterData] = useState(null);
-  const [tweetCount, setTweetCount] = useState(0);
-  const [userData, setUserData] = useState(null);
   const [status, setStatus] = useState("INITIAL");
-  const [chartData, setChartData] = useState(data);
-  const [positiveCount, setPositiveCount] = useState(0);
-  const [negativeCount, setNegativeCount] = useState(0);
-  const [neutralCount, setNeutralCount] = useState(0);
+  const [
+    {
+      TweeterData,
+      tweetCount,
+      userData,
+      positiveCount,
+      negativeCount,
+      neutralCount,
+    },
+    setAnalysis,
+  ] = useState({
+    TweeterData: null,
+    tweetCount: 0,
+    userData: null,
+    chartData: data,
+    positiveCount: 0,
+    negativeCount: 0,
+    neutralCount: 0,
+  });
+
+  const pageSetup = async (target, userName) => {
+    try {
+      if (!model.current) model.current = await loadModel();
+      if (!metaData.current) metaData.current = await getMetaData();
+
+      setStatus("FETCHING_TWEETS");
+
+      const tweetsParsed = await fetch(`${API_URL}/${target}`, {
+        method: "post",
+        body: JSON.stringify({ user: userName }),
+      }).then((response) => response.json());
+
+      setStatus("FETCHED_TWEETS");
+
+      if (!tweetsParsed.tweets || tweetsParsed.tweets.length === 0) {
+        setStatus("NO_TWEETS");
+        return;
+      }
+      const count = tweetsParsed.tweets.length;
+      setAnalysis((state) => ({ ...state, tweetCount: count }));
+
+      let [positive, negative, neutral] = [0, 0, 0];
+      const tweetsAnalysed = tweetsParsed.tweets.map((item) => {
+        const score = sentimentAnalysis(
+          item.text,
+          model.current,
+          metaData.current
+        );
+        switch (score) {
+          case "POSITIVE":
+            positive++;
+            break;
+          case "NEGATIVE":
+            negative++;
+            break;
+          default:
+            neutral++;
+            break;
+        }
+        return {
+          ...item,
+          score,
+        };
+      });
+
+      setAnalysis((state) => ({
+        ...state,
+        TweeterData: tweetsAnalysed,
+        tweetCount: count,
+        userData: tweetsParsed.user,
+        positiveCount: positive,
+        negativeCount: negative,
+        neutralCount: neutral,
+      }));
+      setStatus("READY");
+    } catch (error) {
+      console.error(
+        "🚀 ~ file: index.js ~ line 174 ~ pageSetup ~ error",
+        error
+      );
+      setStatus("ERROR");
+    }
+  };
 
   useEffect(() => {
-    const pageSetup = async (target, userName) => {
-      try {
-        if (!model.current) model.current = await loadModel();
-        if (!metaData.current) metaData.current = await getMetaData();
-        setStatus("FETCHING_TWEETS");
-
-        const response = await window.fetch(`${API_URL}/${target}`, {
-          method: "post",
-          body: JSON.stringify({ user: userName }),
-        });
-        setStatus("FETCHED_TWEETS");
-        const tweetsParsed = await response.json();
-        const count = tweetsParsed.tweets.length;
-        setTweetCount(count);
-
-        if (!tweetsParsed.tweets || tweetsParsed.tweets.length === 0) {
-          setStatus("NO_TWEETS");
-          return;
-        }
-        let [positive, negative, neutral] = [0, 0, 0];
-        const tweetsAnalysed = tweetsParsed.tweets.map((item) => {
-          const score = sentimentAnalysis(
-            item.text,
-            model.current,
-            metaData.current
-          );
-
-          switch (score) {
-            case "POSITIVE":
-              positive++;
-              break;
-            case "NEGATIVE":
-              negative++;
-              break;
-            default:
-              neutral++;
-              break;
-          }
-          return {
-            ...item,
-            score,
-          };
-        });
-        setUserData(tweetsParsed.user);
-        setTweeterData(tweetsAnalysed);
-        setChartData({
-          datasets: [
-            {
-              label: "sentiment analysis result",
-              data: [positiveCount, negativeCount, neutralCount],
-              backgroundColor: [
-                "rgb(68, 242, 103)",
-                "rgb(240, 104, 77)",
-                "rgb(222, 222, 222)",
-              ],
-              hoverOffset: 4,
-            },
-          ],
-        });
-        setPositiveCount(positive);
-        setNegativeCount(negative);
-        setNeutralCount(neutral);
-        setStatus("READY");
-      } catch (error) {
-        console.log(
-          "🚀 ~ file: index.js ~ line 174 ~ pageSetup ~ error",
-          error
-        );
-        setStatus("ERROR");
-      }
-    };
-
     pageSetup(target, userName);
   }, []);
 
   switch (status) {
     case "INITIAL":
       return (
-        <DefaultElement>Fetching AI models please be patient</DefaultElement>
+        <DefaultElement>
+          Fetching AI models; it may take a minute please be patient ... .
+        </DefaultElement>
       );
     case "FETCHING_TWEETS":
       return (
@@ -202,7 +216,8 @@ function Page({}) {
     case "FETCHED_TWEETS":
       return (
         <DefaultElement>
-          Processing {target} it may take a minute please be patient ... .
+          Processing {tweetCount} of {target} it may take a minute please be
+          patient ... .
         </DefaultElement>
       );
 
@@ -216,7 +231,6 @@ function Page({}) {
           positiveCount={positiveCount}
           negativeCount={negativeCount}
           neutralCount={neutralCount}
-          chartData={chartData}
           tweets={TweeterData}
         />
       );

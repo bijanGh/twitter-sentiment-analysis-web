@@ -33,7 +33,7 @@ const predict = (text, model, metadata) => {
   const trimmed = text
     .trim()
     .toLowerCase()
-    .replace(/(\.|\,|\!,|\@)/g, "")
+    .replace(/(\.|\,|\!,|\#,|\@)/g, "")
     .split(" ");
   const sequence = trimmed.map((word) => {
     const wordIndex = metadata.word_index[word];
@@ -59,12 +59,12 @@ const getSentiment = (score) => {
 
 export const sentimentAnalysis = (text, model, metadata) => {
   let sum = 0;
-  const tweet = text.replace(/(?:https?|ftp):\/\/[\n\S]+/g, "");
+  const tweet = text.replace(/(?:https?|ftp):\/\/[\n\S]+/g, "").split(" ");
   for (const prediction of tweet) {
     const perc = predict(prediction, model, metadata);
 
     sum += parseFloat(perc, 10);
   }
 
-  return getSentiment(sum / text.length);
+  return getSentiment(sum / tweet.length);
 };
